@@ -72,6 +72,15 @@ func (u *PaymentUsecase) ProcessPayment(ctx context.Context, orderID string, use
 		return nil, fmt.Errorf("failed to save payment: %w", err)
 	}
 
+	if paymentStatus == model.StatusSuccess {
+		_, err := u.orderClient.MarkOrderPaid(ctx, &pbOrder.MarkOrderPaidRequest{OrderId: orderID})
+		if err != nil {
+			log.Printf("[ERROR] Failed to mark order as paid: %v", err)
+			return nil, fmt.Errorf("failed to mark order as paid: %w", err)
+		}
+		log.Printf("[INFO] Order %s marked as PAID", orderID)
+	}
+
 	log.Printf("[INFO] Payment processed successfully for OrderID: %s", orderID)
 	return payment, nil
 }
