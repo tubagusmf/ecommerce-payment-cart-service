@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -47,16 +48,6 @@ func (u *PaymentMethodUsecase) FindByID(ctx context.Context, id int64) (*model.P
 }
 
 func (u *PaymentMethodUsecase) Create(ctx context.Context, in model.CreatePaymentMethod) error {
-	log := logrus.WithFields(logrus.Fields{
-		"in": in,
-	})
-
-	err := helper.Validator.Struct(in)
-	if err != nil {
-		log.Error("Validation error:", err)
-		return err
-	}
-
 	paymentMethod := model.PaymentMethod{
 		Name:      in.Name,
 		BankCode:  in.BankCode,
@@ -64,8 +55,9 @@ func (u *PaymentMethodUsecase) Create(ctx context.Context, in model.CreatePaymen
 		UpdatedAt: time.Now(),
 	}
 
-	if err := u.paymentMethodRepo.Create(ctx, paymentMethod); err != nil {
-		log.Error("Failed to create payment method: ", err)
+	err := u.paymentMethodRepo.Create(ctx, paymentMethod)
+	if err != nil {
+		log.Println("Failed to create payment method:", err)
 		return err
 	}
 
